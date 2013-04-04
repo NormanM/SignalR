@@ -153,6 +153,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             while (true)
             {
+                Debug.WriteLine(DateTime.UtcNow + ": *** Test Starting ***");
                 EnableTracing();
 
                 // Each node shares the same bus but are indepenent servers
@@ -202,6 +203,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     Assert.Equal(1, nodes.Sum(n => n.Connection.DisconnectCount));
                 }
+
+                Debug.WriteLine(DateTime.UtcNow + ": *** Test Done ***");
+                Debug.WriteLine("");
+                Debug.WriteLine("");
+                Debug.WriteLine("");
             }
         }
 

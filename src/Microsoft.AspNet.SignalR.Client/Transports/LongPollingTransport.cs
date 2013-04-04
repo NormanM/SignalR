@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
@@ -115,12 +116,15 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                 url += GetReceiveQueryString(connection, data);
 
+                Debug.WriteLine(DateTime.UtcNow + ": Resolving Url: " + url);
+
                 return url;
             };
 
             requestHandler.PrepareRequest += req =>
             {
                 connection.PrepareRequest(req);
+                Debug.WriteLine(DateTime.UtcNow + ": Preparing Request");
             };
 
             requestHandler.OnMessage += message =>
@@ -156,6 +160,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     connection.Disconnect();
                 }
+
+                Debug.WriteLine(DateTime.UtcNow + ": On Message: " + message);
             };
 
             requestHandler.OnError += exception =>
@@ -169,10 +175,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 // so just try again and raise OnError.
                 if (!ExceptionHelper.IsRequestAborted(exception) && !(exception is IOException))
                 {
+                    Debug.WriteLine(DateTime.UtcNow + ": Not on purpose On Error: " + exception);
                     connection.OnError(exception);
                 }
                 else
                 {
+                    Debug.WriteLine(DateTime.UtcNow + ": On purpose On Error: " + exception);
+
                     // If we aborted purposely then we need to stop the request handler
                     requestHandler.Stop();
                 }
@@ -187,7 +196,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     reconnectInvoker.Invoke();
                     requestHandler.Abort();
+                    Debug.WriteLine(DateTime.UtcNow + ": Disposer Abort");
                 }, null));
+
+                Debug.WriteLine(DateTime.UtcNow + ": On Polling");
             };
 
             requestHandler.OnAfterPoll = exception =>
@@ -195,6 +207,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 requestDisposer.Dispose();
                 requestDisposer = new Disposer();
                 reconnectInvoker = new ThreadSafeInvoker();
+
+                Debug.WriteLine(DateTime.UtcNow + ": After Poll: " + exception);
 
                 if (exception != null)
                 {
